@@ -20,22 +20,23 @@ library has two memory container types, `Cell` and `RefCell`. Tock uses
 `Cell` extensively, but also adds five new memory container types, each
 of which is tailored to a specific use common in kernel code.
 
-<!-- npm i -g markdown-toc; markdown-toc -i Mutable_References.md -->
-
 <!-- toc -->
 
-- [Brief Overview of Borrowing in Rust](#brief-overview-of-borrowing-in-rust)
-- [Issues with Borrowing in Event-Driven code](#issues-with-borrowing-in-event-driven-code)
-- [`Cell`s in Tock](#cells-in-tock)
-- [The `TakeCell` abstraction](#the-takecell-abstraction)
-  * [Example use of `take` and `replace`](#example-use-of-take-and-replace)
-  * [Example use of `map`](#example-use-of-map)
-    + [`map` variants](#map-variants)
-- [`MapCell`](#mapcell)
-- [`OptionalCell`](#optionalcell)
-- [`VolatileCell`](#volatilecell)
-- [Cell Extensions](#cell-extensions)
-  * [`NumericCellExt`](#numericcellext)
+<!-- Build table of contents with tools/toc.sh -->
+
+- [Mutable References in Tock - Memory Containers (Cells)](#mutable-references-in-tock---memory-containers-(cells))
+  - [Brief Overview of Borrowing in Rust](#brief-overview-of-borrowing-in-rust)
+  - [Issues with Borrowing in Event-Driven code](#issues-with-borrowing-in-event-driven-code)
+  - [`Cell`s in Tock](#`cell`s-in-tock)
+  - [The `TakeCell` abstraction](#the-`takecell`-abstraction)
+    - [Example use of `take` and `replace`](#example-use-of-`take`-and-`replace`)
+    - [Example use of `map`](#example-use-of-`map`)
+      - [`map` variants](#`map`-variants)
+  - [`MapCell`](#`mapcell`)
+  - [`OptionalCell`](#`optionalcell`)
+  - [`VolatileCell`](#`volatilecell`)
+  - [Cell Extensions](#cell-extensions)
+    - [`NumericCellExt`](#`numericcellext`)
 
 <!-- tocstop -->
 

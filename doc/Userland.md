@@ -5,20 +5,20 @@ This document explains how application code works in Tock. This is not a guide
 to creating your own applications, but rather documentation of the design
 thoughts behind how applications function.
 
-<!-- npm i -g markdown-toc; markdown-toc -i Userland.md -->
-
 <!-- toc -->
 
-- [Overview of Applications in Tock](#overview-of-applications-in-tock)
-- [System Calls](#system-calls)
-- [Callbacks](#callbacks)
-- [Inter-Process Communication](#inter-process-communication)
-  * [Services](#services)
-  * [Clients](#clients)
-- [Application Entry Point](#application-entry-point)
-- [Stack and Heap](#stack-and-heap)
-- [Debugging](#debugging)
-- [Applications](#applications)
+<!-- Build table of contents with tools/toc.sh -->
+
+  - [Overview of Applications in Tock](#overview-of-applications-in-tock)
+  - [System Calls](#system-calls)
+  - [Callbacks](#callbacks)
+  - [Inter-Process Communication](#inter-process-communication)
+    - [Services](#services)
+    - [Clients](#clients)
+  - [Application Entry Point](#application-entry-point)
+  - [Stack and Heap](#stack-and-heap)
+  - [Debugging](#debugging)
+  - [Applications](#applications)
 
 <!-- tocstop -->
 

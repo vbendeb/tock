@@ -1,23 +1,23 @@
 Tock Design
 ===========
 
-<!-- npm i -g markdown-toc; markdown-toc -i Design.md -->
-
 <!-- toc -->
 
-- [Architecture](#architecture)
-  * [Capsules](#capsules)
-  * [Processes](#processes)
-    + [Memory Layout](#memory-layout)
-  * [Grants](#grants)
-- [In-Kernel Design Principles](#in-kernel-design-principles)
-  * [Role of HILs](#role-of-hils)
-  * [Split-phase Operation](#split-phase-operation)
-  * [No External Dependencies](#no-external-dependencies)
-  * [Using `unsafe` and Capabilities](#using-unsafe-and-capabilities)
-  * [Ease of Use and Understanding](#ease-of-use-and-understanding)
-  * [Demonstrated Features](#demonstrated-features)
-  * [Merge Aggressively, Archive Unabashedly](#merge-aggressively-archive-unabashedly)
+<!-- Build table of contents with tools/toc.sh -->
+
+  - [Architecture](#architecture)
+    - [Capsules](#capsules)
+    - [Processes](#processes)
+      - [Memory Layout](#memory-layout)
+    - [Grants](#grants)
+  - [In-Kernel Design Principles](#in-kernel-design-principles)
+    - [Role of HILs](#role-of-hils)
+    - [Split-phase Operation](#split-phase-operation)
+    - [No External Dependencies](#no-external-dependencies)
+    - [Using `unsafe` and Capabilities](#using-`unsafe`-and-capabilities)
+    - [Ease of Use and Understanding](#ease-of-use-and-understanding)
+    - [Demonstrated Features](#demonstrated-features)
+    - [Merge Aggressively, Archive Unabashedly](#merge-aggressively,-archive-unabashedly)
 
 <!-- tocstop -->
 

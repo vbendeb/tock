@@ -1,20 +1,21 @@
 # Tock Binary Format
 
-<!-- npm i -g markdown-toc; markdown-toc -i Compilation.md -->
-
 <!-- toc -->
 
-- [App Linked List](#app-linked-list)
-- [Empty Tock Apps](#empty-tock-apps)
-- [TBF Header](#tbf-header)
-  * [TBF Header Base](#tbf-header-base)
-  * [TLV Elements](#tlv-elements)
-  * [TLV Types](#tlv-types)
-    + [`1` Main](#1-main)
-    + [`2` Writeable Flash Region](#2-writeable-flash-region)
-    + [`3` Package Name](#3-package-name)
-    + [`5` Fixed Addresses](#5-fixed-addresses)
-- [Code](#code)
+<!-- Build table of contents with tools/toc.sh -->
+
+- [Tock Binary Format](#tock-binary-format)
+  - [App Linked List](#app-linked-list)
+  - [Empty Tock Apps](#empty-tock-apps)
+  - [TBF Header](#tbf-header)
+    - [TBF Header Base](#tbf-header-base)
+    - [TLV Elements](#tlv-elements)
+    - [TLV Types](#tlv-types)
+      - [`1` Main](#`1`-main)
+      - [`2` Writeable Flash Region](#`2`-writeable-flash-region)
+      - [`3` Package Name](#`3`-package-name)
+      - [`5` Fixed Addresses](#`5`-fixed-addresses)
+  - [Code](#code)
 
 <!-- tocstop -->
 

@@ -5,16 +5,16 @@ An operating system necessarily must use unsafe code. This document explains
 the rationale behind some of the key mechanisms in Tock that do use unsafe code
 but should still preserve safety in the overall OS.
 
-<!-- npm i -g markdown-toc; markdown-toc -i Soundness.md -->
-
 <!-- toc -->
 
-- [`static_init!`](#static_init)
-  * [Use](#use)
-  * [Soundness](#soundness)
-  * [Alternatives](#alternatives)
-- [Capabilities: Restricting Access to Certain Functions and Operations](#capabilities-restricting-access-to-certain-functions-and-operations)
-  * [Capability Examples](#capability-examples)
+<!-- Build table of contents with tools/toc.sh -->
+
+  - [`static_init!`](#`static_init!`)
+    - [Use](#use)
+    - [Soundness](#soundness)
+    - [Alternatives](#alternatives)
+  - [Capabilities: Restricting Access to Certain Functions and Operations](#capabilities:-restricting-access-to-certain-functions-and-operations)
+    - [Capability Examples](#capability-examples)
 
 <!-- tocstop -->
 

@@ -6,21 +6,22 @@ platform has a different way of programming the kernel and processes. Below is
 an explanation of both kernel and process compilation as well as some examples
 of how platforms program each onto an actual board.
 
-<!-- npm i -g markdown-toc; markdown-toc -i Compilation.md -->
-
 <!-- toc -->
 
-- [Compiling the kernel](#compiling-the-kernel)
-  * [Life of a Tock compilation](#life-of-a-tock-compilation)
-  * [LLVM Binutils](#llvm-binutils)
-  * [Special `.apps` section](#special-apps-section)
-- [Compiling a process](#compiling-a-process)
-  * [Position Independent Code](#position-independent-code)
-  * [Tock Binary Format](#tock-binary-format)
-  * [Tock Application Bundle](#tock-application-bundle)
-    + [TAB Format](#tab-format)
-    + [Metadata](#metadata)
-- [Loading the kernel and processes onto a board](#loading-the-kernel-and-processes-onto-a-board)
+<!-- Build table of contents with tools/toc.sh -->
+
+- [How does Tock compile?](#how-does-tock-compile?)
+  - [Compiling the kernel](#compiling-the-kernel)
+    - [Life of a Tock compilation](#life-of-a-tock-compilation)
+    - [LLVM Binutils](#llvm-binutils)
+    - [Special `.apps` section](#special-`.apps`-section)
+  - [Compiling a process](#compiling-a-process)
+    - [Position Independent Code](#position-independent-code)
+    - [Tock Binary Format](#tock-binary-format)
+    - [Tock Application Bundle](#tock-application-bundle)
+      - [TAB Format](#tab-format)
+      - [Metadata](#metadata)
+  - [Loading the kernel and processes onto a board](#loading-the-kernel-and-processes-onto-a-board)
 
 <!-- tocstop -->
 

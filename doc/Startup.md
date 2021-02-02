@@ -3,21 +3,21 @@ Tock Startup
 
 This document walks through how all of the components of Tock start up.
 
-<!-- npm i -g markdown-toc; markdown-toc -i Startup.md -->
-
 <!-- toc -->
 
-- [Optional Bootloader](#optional-bootloader)
-- [Tock first instructions](#tock-first-instructions)
-  * [ARM Vector Table and IRQ table](#arm-vector-table-and-irq-table)
-  * [RISC-V](#risc-v)
-- [Reset Handler](#reset-handler)
-  * [Memory Initialization](#memory-initialization)
-  * [RISC-V Trap setup](#risc-v-trap-setup)
-  * [MCU Setup](#mcu-setup)
-  * [Peripheral and Capsule Initialization](#peripheral-and-capsule-initialization)
-- [Application Startup](#application-startup)
-- [Scheduler Execution](#scheduler-execution)
+<!-- Build table of contents with tools/toc.sh -->
+
+  - [Optional Bootloader](#optional-bootloader)
+  - [Tock first instructions](#tock-first-instructions)
+    - [ARM Vector Table and IRQ table](#arm-vector-table-and-irq-table)
+    - [RISC-V](#risc-v)
+  - [Reset Handler](#reset-handler)
+    - [Memory Initialization](#memory-initialization)
+    - [RISC-V Trap setup](#risc-v-trap-setup)
+    - [MCU Setup](#mcu-setup)
+    - [Peripheral and Capsule Initialization](#peripheral-and-capsule-initialization)
+  - [Application Startup](#application-startup)
+  - [Scheduler Execution](#scheduler-execution)
 
 <!-- tocstop -->
 
@@ -119,7 +119,7 @@ copying it from flash. For the SAM4L, this is in the `init()` function in
 
 The `mtvec` register needs to be set on RISC-V to handle traps. Setting
 of the vectors is handled by chip specific functions. The common RISC-V trap
-handler is `_start_trap`, defined in `arch/rv32i/src/lib.rs`. 
+handler is `_start_trap`, defined in `arch/rv32i/src/lib.rs`.
 
 ### MCU Setup
 

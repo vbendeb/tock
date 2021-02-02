@@ -4,21 +4,21 @@ Memory Layout
 This document describes how the memory in Tock is structured and used for the
 kernel, applications, and supporting state.
 
-<!-- npm i -g markdown-toc; markdown-toc -i Memory_Layout.md -->
-
 <!-- toc -->
 
-- [Flash](#flash)
-  * [Kernel code](#kernel-code)
-  * [Process code](#process-code)
-- [RAM](#ram)
-  * [Kernel RAM](#kernel-ram)
-  * [Process RAM](#process-ram)
-- [Hardware Implementations](#hardware-implementations)
-  * [SAM4L](#sam4l)
-    + [Flash](#flash-1)
-    + [RAM](#ram-1)
-    + [Overview](#overview)
+<!-- Build table of contents with tools/toc.sh -->
+
+  - [Flash](#flash)
+    - [Kernel code](#kernel-code)
+    - [Process code](#process-code)
+  - [RAM](#ram)
+    - [Kernel RAM](#kernel-ram)
+    - [Process RAM](#process-ram)
+  - [Hardware Implementations](#hardware-implementations)
+    - [SAM4L](#sam4l)
+      - [Flash](#flash)
+      - [RAM](#ram)
+      - [Overview](#overview)
 
 <!-- tocstop -->
 

@@ -4,14 +4,14 @@ Tock Style
 This document overviews some stylistic conventions that Tock generally adheres
 to.
 
-<!-- npm i -g markdown-toc; markdown-toc -i Style.md -->
-
 <!-- toc -->
 
-- [Code Style](#code-style)
-- [Commenting](#commenting)
-  * [Example: mycapsule.rs](#example-mycapsulers)
-- [Using Descriptive Names](#using-descriptive-names)
+<!-- Build table of contents with tools/toc.sh -->
+
+  - [Code Style](#code-style)
+  - [Commenting](#commenting)
+    - [Example: mycapsule.rs](#example:-mycapsule.rs)
+  - [Using Descriptive Names](#using-descriptive-names)
 
 <!-- tocstop -->
 

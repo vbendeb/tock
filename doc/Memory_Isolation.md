@@ -6,13 +6,13 @@ permissions of the kernel and processes.  Before reading this, make sure you
 have a good understanding of the [design of Tock](Design.md) and the [Tock
 memory layout](Memory_Layout.md).
 
-<!-- npm i -g markdown-toc; markdown-toc -i Memory_Isolation.md -->
-
 <!-- toc -->
 
-- [Process Isolation](#process-isolation)
-  * [Flash](#flash)
-  * [RAM](#ram)
+<!-- Build table of contents with tools/toc.sh -->
+
+  - [Process Isolation](#process-isolation)
+    - [Flash](#flash)
+    - [RAM](#ram)
 
 <!-- tocstop -->
 

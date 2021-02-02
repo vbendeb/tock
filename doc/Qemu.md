@@ -8,12 +8,12 @@ Tock is experimenting with QEMU.
 That said, please do file PRs or issues if you run into trouble or find things
 confusing. The long-term goal is to integrate QEMU as a core part of CI for Tock.
 
-<!-- npm i -g markdown-toc; markdown-toc -i Qemu.md -->
-
 <!-- toc -->
 
-- [Supported Boards](#supported-boards)
-- [Building QEMU](#building-qemu)
+<!-- Build table of contents with tools/toc.sh -->
+
+  - [Supported Boards](#supported-boards)
+  - [Building QEMU](#building-qemu)
 
 <!-- tocstop -->
 

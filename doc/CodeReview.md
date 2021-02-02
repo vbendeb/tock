@@ -5,25 +5,27 @@
 This document describes how the Tock [core working group](../wg/core/README.md)
 merges pull requests for and makes releases of the main Tock repository.
 
-<!-- npm i -g markdown-toc; markdown-toc -i Abstract.md -->
-
 <!-- toc -->
 
-- [1. Introduction](#1-introduction)
-- [2. Pull Requests](#2-pull-requests)
-- [3. Continuous Integration](#3-continuous-integration)
-  * [CI Organization](#ci-organization)
-    + [The short answer: `make prepush`](#the-short-answer-make-prepush)
-    + [The complete CI setup](#the-complete-ci-setup)
-      - [`ci-job-*`](#ci-job-)
-      - [`ci-setup-*`](#ci-setup-)
-      - [`ci-runner-*[-*]`](#ci-runner--)
-      - [`ci-all`](#ci-all)
-- [4. Reviews](#4-reviews)
-- [5. Release Process](#5-release-process)
-- [Other Tock Repositories](#other-tock-repositories)
-  * [Userland Repositories](#userland-repositories)
-  * [Tertiary Repositories](#tertiary-repositories)
+<!-- Build table of contents with tools/toc.sh -->
+
+- [Tock Pull Request Process](#tock-pull-request-process)
+  - [Abstract](#abstract)
+  - [1. Introduction](#1.-introduction)
+  - [2. Pull Requests](#2.-pull-requests)
+  - [3. Continuous Integration](#3.-continuous-integration)
+    - [CI Organization](#ci-organization)
+      - [The short answer: `make prepush`](#the-short-answer:-`make-prepush`)
+      - [The complete CI setup](#the-complete-ci-setup)
+        - [`ci-job-*`](#`ci-job-*`)
+        - [`ci-setup-*`](#`ci-setup-*`)
+        - [`ci-runner-*[-*]`](#`ci-runner-*[-*]`)
+        - [`ci-all`](#`ci-all`)
+  - [4. Reviews](#4.-reviews)
+  - [5. Release Process](#5.-release-process)
+  - [Other Tock Repositories](#other-tock-repositories)
+    - [Userland Repositories](#userland-repositories)
+    - [Tertiary Repositories](#tertiary-repositories)
 
 <!-- tocstop -->
 
