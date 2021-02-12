@@ -339,50 +339,58 @@ impl SysCall {
 impl kernel::syscall::UserspaceKernelBoundary for SysCall {
     type StoredState = PosixStoredState;
 
+    fn initial_process_app_brk_size(&self) -> usize {
+        // Not needed on posix.
+        0
+    }
+
     unsafe fn initialize_process(
         &self,
-        stack_pointer: *const usize,
-        _stack_size: usize,
+        accessible_memory_start: *const u8,
+        _app_brk: *const u8,
         state: &mut Self::StoredState,
-    ) -> Result<*const usize, ()> {
+    ) -> Result<(), ()> {
         // We need to initialize the stored state for the process here. This
         // initialization can be called multiple times for a process, for
         // example if the process is restarted.
         state.first_run = true;
         state.sys_pc = 0;
         state.yield_pc = 0;
+        state.stack_pointer = accessible_memory_start as usize;
 
-        // Allocate the kernel frame
-        Ok((stack_pointer as *mut usize).offset(0))
+        Ok(())
     }
 
     unsafe fn set_syscall_return_value(
         &self,
-        _stack_pointer: *const usize,
+        _accessible_memory_start: *const u8,
+        _app_brk: *const u8,
         state: &mut Self::StoredState,
         return_value: isize,
-    ) {
+    ) -> Result<(), ()> {
         // set the R0 (RAX, EAX, ...) register
         state
             .context
             .write_register(Regs::r0(), return_value as usize);
+        Ok(())
     }
 
     unsafe fn set_process_function(
         &self,
-        stack_pointer: *const usize,
-        _remaining_stack_memory: usize,
-        state: &mut PosixStoredState,
+        _accessible_memory_start: *const u8,
+        _app_brk: *const u8,
+        state: &mut Self::StoredState,
         callback: kernel::procs::FunctionCall,
-    ) -> Result<*mut usize, *mut usize> {
-        let mut stack_bottom = stack_pointer as *mut usize;
+    ) -> Result<(), ()> {
         state.sys_pc = callback.pc;
 
         #[cfg(target_arch = "x86_64")]
         {
             // add the yield RIP value to the stack
-            std::ptr::write_volatile(stack_bottom.offset(-1), state.yield_pc);
-            stack_bottom = stack_bottom.offset(-1);
+            std::ptr::write_volatile(
+                (state.stack_pointer as *mut usize).offset(-1),
+                state.yield_pc,
+            );
             // AMD 64 sets the parameters in RDI, RSI, RDX and RCX
             state.context.write_register(Regs::RDI, callback.argument0);
             state.context.write_register(Regs::RSI, callback.argument1);
@@ -390,7 +398,7 @@ impl kernel::syscall::UserspaceKernelBoundary for SysCall {
             state.context.write_register(Regs::RCX, callback.argument3);
         }
 
-        // Copy .text, .rodata and .data from originial flash
+        // Copy .text, .rodata and .data from original flash
         // as this might be a process restart and data in flash
         // is already relocated
         if state.first_run {
@@ -404,15 +412,15 @@ impl kernel::syscall::UserspaceKernelBoundary for SysCall {
             );
         }
 
-        Ok(stack_bottom)
+        Ok(())
     }
 
     unsafe fn switch_to_process(
         &self,
-        stack_pointer: *const usize,
+        _accessible_memory_start: *const u8,
+        _app_brk: *const u8,
         state: &mut PosixStoredState,
-    ) -> (*mut usize, kernel::syscall::ContextSwitchReason) {
-        state.stack_pointer = stack_pointer as usize;
+    ) -> (kernel::syscall::ContextSwitchReason, Option<*const u8>) {
         CURRENT_PROCESS = *state;
         switch_to_user();
         *state = CURRENT_PROCESS;
@@ -420,6 +428,7 @@ impl kernel::syscall::UserspaceKernelBoundary for SysCall {
 
         state.sys_pc = state.context.read_register(Regs::pc());
         let new_stack_pointer = state.context.read_register(Regs::sp()) as *const usize;
+        state.stack_pointer = new_stack_pointer as usize;
 
         // Determine why this returned and the process switched back to the
         // kernel.
@@ -457,7 +466,8 @@ impl kernel::syscall::UserspaceKernelBoundary for SysCall {
 
             // Use the helper function to convert these raw values into a Tock
             // `Syscall` type.
-            let syscall = kernel::syscall::arguments_to_syscall(syscall_number, r0, r1, r2, r3);
+            let syscall =
+                kernel::syscall::Syscall::from_register_arguments(syscall_number, r0, r1, r2, r3);
 
             match syscall {
                 Some(s) => kernel::syscall::ContextSwitchReason::SyscallFired { syscall: s },
@@ -469,13 +479,14 @@ impl kernel::syscall::UserspaceKernelBoundary for SysCall {
             kernel::syscall::ContextSwitchReason::Interrupted
         };
         // println!("switch {:?}", switch_reason);
-        (new_stack_pointer as *mut usize, switch_reason)
+        (switch_reason, Some(new_stack_pointer as *const u8))
     }
 
     unsafe fn print_context(
         &self,
-        _stack_pointer: *const usize,
-        state: &PosixStoredState,
+        _accessible_memory_start: *const u8,
+        _app_brk: *const u8,
+        state: &Self::StoredState,
         writer: &mut dyn Write,
     ) {
         #[cfg(target_arch = "x86_64")]
