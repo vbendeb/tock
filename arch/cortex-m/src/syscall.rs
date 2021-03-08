@@ -236,7 +236,7 @@ impl kernel::syscall::UserspaceKernelBoundary for SysCall {
 
             match syscall {
                 Some(s) => kernel::syscall::ContextSwitchReason::SyscallFired { syscall: s },
-                None => kernel::syscall::ContextSwitchReason::Fault,
+                None => kernel::syscall::ContextSwitchReason::InvalidSyscall,
             }
         } else {
             // If none of the above cases are true its because the process was interrupted by an

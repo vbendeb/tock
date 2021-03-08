@@ -103,6 +103,11 @@ impl Syscall {
 pub enum ContextSwitchReason {
     /// Process called a syscall. Also returns the syscall and relevant values.
     SyscallFired { syscall: Syscall },
+    /// Process called a syscall that could not be interpreted as a `Syscall`
+    /// object. This indicates a problem with the process binary (likely an
+    /// incompatibility with the kernel version). We separate this from `Fault`
+    /// to help with debugging.
+    InvalidSyscall,
     /// Process triggered the hardfault handler.
     Fault,
     /// Process interrupted (e.g. by a hardware event)

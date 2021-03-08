@@ -404,7 +404,7 @@ impl kernel::syscall::UserspaceKernelBoundary for SysCall {
                         );
                         match syscall {
                             Some(s) => ContextSwitchReason::SyscallFired { syscall: s },
-                            None => ContextSwitchReason::Fault,
+                            None => ContextSwitchReason::InvalidSyscall,
                         }
                     }
                     _ => {
