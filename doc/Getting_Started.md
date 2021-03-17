@@ -95,12 +95,11 @@ $ rustup install nightly-2021-01-07
 
 #### Tockloader
 
-`tockloader` programs the kernel and applications onto boards, and also has
-features that are generally useful for all Tock boards, such as easy-to-manage
-serial connections, along with the ability to list, add, replace, and remove
-applications over JTAG (or USB if a bootloader is installed).
-
-1. [tockloader](https://github.com/tock/tockloader) (version >= 1.0)
+[tockloader](https://github.com/tock/tockloader) programs the kernel and
+applications onto boards, and also has features that are generally useful for
+all Tock boards, such as easy-to-manage serial connections, along with the
+ability to list, add, replace, and remove applications over JTAG (or USB if a
+bootloader is installed).
 
 Tockloader is a Python application and can be installed with the Python
 package manager (pip).
@@ -124,6 +123,7 @@ directory.  All boards share a few common targets:
   - `debug`: Generate build(s) for debugging support, details vary per board.
   - `doc`: Build documentation for this board.
   - `clean`: Remove built artifacts for this board.
+  - `install`: Load code using the preferred method for the board.
   - `flash`: Load code using JTAG, if available.
   - `program`: Load code using a bootloader, if available.
 
@@ -173,27 +173,6 @@ Some boards (at the time of writing the HiFive1 RISC-V board) may
 require newer or unreleased versions, in that case you should follow
 the installation instructions on the [`openocd`
 website](http://openocd.org/getting-openocd/).
-
-### (Linux): Adding a `udev` rule
-
-Depending on which programming adapter you use, you may want to add a
-`udev` rule in `/etc/udev/rules.d` that allows you to interact with
-the board as a user instead of as root. If you install the `deb`
-packet of the `JLink` software it will automatically install a
-`/etc/udev/rules.d/99-jlink.rules` that allows everyone to access the
-adapter. If you use something else, like for example the onboard
-programmer of a ST Nucleo board, you could install something like this as
-`/etc/udev/rules.d/99-stlinkv2-1.rules`:
-
-```
-# stm32 nucleo boards, with onboard st/linkv2-1
-# ie, STM32F0, STM32F4.
-# STM32VL has st/linkv1, which is quite different
-
-SUBSYSTEMS=="usb", ATTRS{idVendor}=="0483", ATTRS{idProduct}=="374b", \
-    MODE:="0660", GROUP="dialout", \
-    SYMLINK+="stlinkv2-1_%n"
-```
 
 ## Installing your first application
 
