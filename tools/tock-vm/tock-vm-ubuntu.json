@@ -1,0 +1,100 @@
+# Packer config file that describes:
+# 1. How to create a virtual box image from an ubuntu server iso.
+# 2. What commands to run to setup the VM for Tock.
+#
+# We start with ubuntu server because it supports "autoinstall" which helps
+# with customizing an ubuntu install. autoinstall uses the http/user-data script
+# as a configuration file. There we install ubuntu-desktop so users have a GUI.
+#
+# Comments in the JSON file are removed by a preprocess step in build.sh.
+{
+  "builders": [
+    # Virtual Box (based on .iso file) builder.
+    {
+      "name": "tock-vm-ubuntu-20.04-amd64",
+      "vm_name": "tock-vm-ubuntu-20.04-amd64",
+      "type": "virtualbox-iso",
+      "guest_os_type": "Ubuntu_64",
+      "headless": false,
+
+      "iso_checksum": "sha256:d1f2bf834bbe9bb43faf16f9be992a6f3935e65be0edece1dee2aa6eb1767423",
+      "iso_urls": [
+        "https://releases.ubuntu.com/20.04.2/ubuntu-20.04.2-live-server-amd64.iso"
+      ],
+
+      "ssh_password": "tock",
+      "ssh_username": "tock",
+      "ssh_handshake_attempts": "5000",
+      "ssh_timeout": "60m",
+
+      "http_directory": "http",
+
+      # This is the magic autoinstall step that passes a configuration file
+      # (http/user-data) to a setup tool.
+      "boot_wait": "5s",
+      "boot_command": [
+        "<enter><enter><f6><esc><wait> ",
+        "autoinstall ds=nocloud-net;s=http://{{ .HTTPIP }}:{{ .HTTPPort }}/",
+        "<wait><enter>"
+      ],
+
+      "shutdown_command": "echo 'tock' | sudo -S shutdown -P now",
+
+      "disk_size": 20480,
+      "virtualbox_version_file": ".vbox_version",
+      "format": "ova",
+      "vboxmanage": [
+        [
+          "modifyvm",
+          "{{.Name}}",
+          "--memory",
+          "1024"
+        ],
+        [
+          "modifyvm",
+          "{{.Name}}",
+          "--cpus",
+          "2"
+        ]
+      ]
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "shell",
+      "scripts": [
+        "scripts/10-setup_tools.sh",
+        "scripts/20-clone_repositories.sh"
+      ]
+    },
+    {
+      "type": "shell",
+      # We specify an execute_command so that this script runs with sudo.
+      "execute_command": "echo 'tock' | {{.Vars}} sudo -S -E bash '{{.Path}}'",
+      "scripts": [
+        "scripts/30-root_setup.sh"
+      ]
+    },
+    # Build some Tock artifacts so the toolchains are installed and build
+    # artifacts can be cached.
+    {
+      "type": "shell",
+      "scripts": [
+        "scripts/40-test_run.sh"
+      ]
+    }
+  ],
+  "variables": {
+    "ami_name": "tock-vm",
+    "aws_access_key": "",
+    "aws_secret_key": "",
+    "instance_type": "",
+    "region": "",
+    "security_group_id": "",
+    "source_ami": "",
+    "ssh_username": "tock",
+    "subnet_id": "",
+    "vpc_id": ""
+  }
+}
+
