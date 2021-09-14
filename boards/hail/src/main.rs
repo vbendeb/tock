@@ -44,6 +44,7 @@ static mut PROCESSES: [Option<&'static dyn kernel::process::Process>; NUM_PROCS]
     [None; NUM_PROCS];
 
 static mut CHIP: Option<&'static sam4l::chip::Sam4l<Sam4lDefaultPeripherals>> = None;
+static mut PPRINTER: Option<&'static kernel::process::ProcessPrinterText> = None;
 
 /// Dummy buffer that causes the linker to reserve enough space for the stack.
 #[no_mangle]
@@ -496,6 +497,12 @@ pub unsafe fn main() {
     //     )
     // );
     // peripherals.pa[16].set_client(debug_process_restart);
+
+    let pprinter = static_init!(
+        kernel::process::ProcessPrinterText,
+        kernel::process::ProcessPrinterText::new()
+    );
+    PPRINTER = Some(pprinter);
 
     // Configure application fault policy
     let fault_policy = static_init!(
