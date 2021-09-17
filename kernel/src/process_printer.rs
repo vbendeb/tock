@@ -62,6 +62,11 @@ impl ProcessPrinter for ProcessPrinterText {
                     restart_count,
                 ));
 
+                // let _ = match last_syscall {
+                //             Some(syscall) => writer.write_fmt(format_args!(" Last Syscall: {:?}\r\n", syscall)),
+                //             None => writer.write_str(" Last Syscall: None\r\n"),
+                //         };
+
                 true
             }
             1 => {
