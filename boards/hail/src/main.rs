@@ -266,6 +266,12 @@ pub unsafe fn main() {
     );
     DynamicDeferredCall::set_global_instance(dynamic_deferred_caller);
 
+    let pprinter = static_init!(
+        kernel::process::ProcessPrinterText,
+        kernel::process::ProcessPrinterText::new()
+    );
+    PPRINTER = Some(pprinter);
+
     // Initialize USART0 for Uart
     peripherals.usart0.set_mode(sam4l::usart::UsartMode::Uart);
 
@@ -289,7 +295,7 @@ pub unsafe fn main() {
     )
     .finalize(());
     let process_console =
-        components::process_console::ProcessConsoleComponent::new(board_kernel, uart_mux)
+        components::process_console::ProcessConsoleComponent::new(board_kernel, uart_mux, pprinter)
             .finalize(());
     components::debug_writer::DebugWriterComponent::new(uart_mux).finalize(());
 
@@ -497,12 +503,6 @@ pub unsafe fn main() {
     //     )
     // );
     // peripherals.pa[16].set_client(debug_process_restart);
-
-    let pprinter = static_init!(
-        kernel::process::ProcessPrinterText,
-        kernel::process::ProcessPrinterText::new()
-    );
-    PPRINTER = Some(pprinter);
 
     // Configure application fault policy
     let fault_policy = static_init!(
