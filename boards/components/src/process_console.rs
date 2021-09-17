@@ -18,21 +18,25 @@ use capsules::virtual_uart::{MuxUart, UartDevice};
 use kernel::capabilities;
 use kernel::component::Component;
 use kernel::hil;
+use kernel::process::ProcessPrinter;
 use kernel::static_init;
 
 pub struct ProcessConsoleComponent {
     board_kernel: &'static kernel::Kernel,
     uart_mux: &'static MuxUart<'static>,
+    process_printer: &'static dyn ProcessPrinter,
 }
 
 impl ProcessConsoleComponent {
     pub fn new(
         board_kernel: &'static kernel::Kernel,
         uart_mux: &'static MuxUart,
+        process_printer: &'static dyn ProcessPrinter,
     ) -> ProcessConsoleComponent {
         ProcessConsoleComponent {
             board_kernel: board_kernel,
             uart_mux: uart_mux,
+            process_printer,
         }
     }
 }
@@ -81,6 +85,7 @@ impl Component for ProcessConsoleComponent {
             process_console::ProcessConsole<'static, Capability>,
             process_console::ProcessConsole::new(
                 console_uart,
+                self.process_printer,
                 &mut process_console::WRITE_BUF,
                 &mut process_console::READ_BUF,
                 &mut process_console::QUEUE_BUF,
