@@ -1,10 +1,18 @@
 //! Tools for displaying process state.
 
-use core::cell::Cell;
 use core::fmt::Write;
 
 use crate::process::Process;
-use crate::utilities::cells::NumericCellExt;
+
+/// A context token that the caller must pass back to us. This allows us to
+/// track where we are in the print operation.
+#[derive(PartialEq, Eq, Copy, Clone)]
+pub struct ProcessPrinterContext {
+    /// The overall print message is broken in to chunks so that it can be fit
+    /// in a small buffer that is called multiple times. This tracks which chunk
+    /// we are in so we can print the next block.
+    iteration: usize,
+}
 
 /// Trait for creating a custom "process printer" that formats process state in
 /// some sort of presentable format.
@@ -18,30 +26,33 @@ use crate::utilities::cells::NumericCellExt;
 /// into a human readable format later. Other cases might want to log process
 /// state to nonvolatile storage rather than display it immediately.
 pub trait ProcessPrinter {
-    fn print(&self, process: &dyn Process, writer: &mut dyn Write) -> bool;
+    fn print(
+        &self,
+        process: &dyn Process,
+        writer: &mut dyn Write,
+        context: Option<ProcessPrinterContext>,
+    ) -> Option<ProcessPrinterContext>;
 }
 
-pub struct ProcessPrinterText {
-    /// The overall print message is broken in to chunks so that it can be fit
-    /// in a small buffer that is called multiple times. This tracks which chunk
-    /// we are in so we can print the next block.
-    iteration: Cell<usize>,
-}
+/// A Process Printer that displays a process as a human-readable string.
+pub struct ProcessPrinterText {}
 
 impl ProcessPrinterText {
     pub fn new() -> ProcessPrinterText {
-        ProcessPrinterText {
-            iteration: Cell::new(0),
-        }
+        ProcessPrinterText {}
     }
 }
 
 impl ProcessPrinter for ProcessPrinterText {
-    fn print(&self, process: &dyn Process, writer: &mut dyn Write) -> bool {
-        let iter = self.iteration.get();
-        self.iteration.increment();
+    fn print(
+        &self,
+        process: &dyn Process,
+        writer: &mut dyn Write,
+        context: Option<ProcessPrinterContext>,
+    ) -> Option<ProcessPrinterContext> {
+        let iteration = context.map_or(0, |c| c.iteration);
 
-        match iter {
+        let keep_going = match iteration {
             0 => {
                 // Process statistics
                 let events_queued = 0; //self.tasks.map_or(0, |tasks| tasks.len());
@@ -278,7 +289,6 @@ impl ProcessPrinter for ProcessPrinterText {
                     flash_protected_size, addresses.flash_start
                 ));
 
-                self.iteration.set(0);
                 false
             }
 
@@ -287,6 +297,15 @@ impl ProcessPrinter for ProcessPrinterText {
                 // handled.
                 false
             }
+        };
+
+        if keep_going {
+            let new_context = ProcessPrinterContext {
+                iteration: iteration + 1,
+            };
+            Some(new_context)
+        } else {
+            None
         }
     }
 }
