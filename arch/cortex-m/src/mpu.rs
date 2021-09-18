@@ -4,9 +4,11 @@
 use core::cell::Cell;
 use core::cmp;
 use core::fmt;
+use core::fmt::Write;
 
 use kernel;
 use kernel::platform::mpu;
+use kernel::platform::mpu::MpuPrinter;
 use kernel::utilities::cells::OptionalCell;
 use kernel::utilities::math;
 use kernel::utilities::registers::interfaces::{Readable, Writeable};
@@ -129,20 +131,25 @@ const MPU_BASE_ADDRESS: StaticRef<MpuRegisters> =
 ///
 /// There should only be one instantiation of this object as it represents
 /// real hardware.
-pub struct MPU<const NUM_REGIONS: usize, const MIN_REGION_SIZE: usize> {
+pub struct MPU<MP: MpuPrinter, const NUM_REGIONS: usize, const MIN_REGION_SIZE: usize> {
     /// MMIO reference to MPU registers.
     registers: StaticRef<MpuRegisters>,
     /// Optimization logic. This is used to indicate which application the MPU
     /// is currently configured for so that the MPU can skip updating when the
     /// kernel returns to the same app.
     hardware_is_configured_for: OptionalCell<ProcessId>,
+
+    printer: MP,
 }
 
-impl<const NUM_REGIONS: usize, const MIN_REGION_SIZE: usize> MPU<NUM_REGIONS, MIN_REGION_SIZE> {
-    pub const unsafe fn new() -> Self {
+impl<MP: MpuPrinter, const NUM_REGIONS: usize, const MIN_REGION_SIZE: usize>
+    MPU<MP, NUM_REGIONS, MIN_REGION_SIZE>
+{
+    pub const unsafe fn new(printer: MP) -> Self {
         Self {
             registers: MPU_BASE_ADDRESS,
             hardware_is_configured_for: OptionalCell::empty(),
+            printer,
         }
     }
 }
@@ -360,8 +367,8 @@ impl CortexMRegion {
     }
 }
 
-impl<const NUM_REGIONS: usize, const MIN_REGION_SIZE: usize> mpu::MPU
-    for MPU<NUM_REGIONS, MIN_REGION_SIZE>
+impl<MP: MpuPrinter, const NUM_REGIONS: usize, const MIN_REGION_SIZE: usize> mpu::MPU
+    for MPU<MP, NUM_REGIONS, MIN_REGION_SIZE>
 {
     type MpuConfig = CortexMConfig<NUM_REGIONS>;
 
@@ -703,5 +710,20 @@ impl<const NUM_REGIONS: usize, const MIN_REGION_SIZE: usize> mpu::MPU
             self.hardware_is_configured_for.set(*app_id);
             config.is_dirty.set(false);
         }
+    }
+
+    fn print_mpu_config(&self, config: &Self::MpuConfig, writer: &mut dyn Write) {
+        self.printer.print(config, writer);
+    }
+}
+
+struct CortexMDefaultPrinter<const NUM_REGIONS: usize, const MIN_REGION_SIZE: usize> {}
+
+impl<const NUM_REGIONS: usize, const MIN_REGION_SIZE: usize> MpuPrinter
+    for CortexMDefaultPrinter<NUM_REGIONS, MIN_REGION_SIZE>
+{
+    type MpuConfig = <MPU<Self, NUM_REGIONS, MIN_REGION_SIZE> as mpu::MPU>::MpuConfig;
+    fn print(&self, config: &Self::MpuConfig, writer: &mut dyn Write) {
+        let _ = writer.write_fmt(format_args!("{}", config));
     }
 }

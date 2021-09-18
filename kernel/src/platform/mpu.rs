@@ -263,6 +263,8 @@ pub trait MPU {
     /// - `app_id`: ProcessId of the process that the MPU is configured for
     #[allow(unused_variables)]
     fn configure_mpu(&self, config: &Self::MpuConfig, app_id: &ProcessId) {}
+
+    fn print_mpu_config(&self, config: &Self::MpuConfig, writer: &mut dyn core::fmt::Write) {}
 }
 
 /// Implement default MPU trait for unit.
@@ -342,4 +344,9 @@ pub trait KernelMPU {
     /// changes to the kernel regions after this is enabled.
     #[allow(unused_variables)]
     fn enable_kernel_mpu(&self, config: &mut Self::KernelMpuConfig);
+}
+
+pub trait MpuPrinter {
+    type MpuConfig: Default;
+    fn print(&self, mpu_config: &Self::MpuConfig, writer: &mut dyn core::fmt::Write);
 }

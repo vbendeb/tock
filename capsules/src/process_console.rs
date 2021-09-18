@@ -118,7 +118,7 @@ use kernel::ProcessId;
 use kernel::debug;
 use kernel::hil::uart;
 use kernel::introspection::KernelInfo;
-use kernel::process::{ProcessPrinter, ProcessPrinterContext};
+use kernel::process::{Iteration, ProcessPrinter, ProcessPrinterContext};
 use kernel::ErrorCode;
 use kernel::Kernel;
 
@@ -148,7 +148,7 @@ enum WriterState {
     KernelText,
     ProcessPrint {
         process_id: ProcessId,
-        context: Option<ProcessPrinterContext>,
+        context: ProcessPrinterContext,
     },
     List {
         index: isize,
@@ -449,16 +449,16 @@ impl<'a, C: ProcessManagementCapability> ProcessConsole<'a, C> {
                     .process_each_capability(&self.capability, |process| {
                         if process_id == process.processid() {
                             let mut console_writer = ConsoleWriter::new();
-                            let new_context =
+                            let next_iteration =
                                 self.process_printer
                                     .print(process, &mut console_writer, context);
 
                             let _ = self.write_bytes(&(console_writer.buf)[..console_writer.size]);
 
-                            if new_context.is_some() {
+                            if let Some(next) = next_iteration {
                                 self.writer_state.replace(WriterState::ProcessPrint {
                                     process_id: process_id,
-                                    context: new_context,
+                                    context: ProcessPrinterContext::PrintSomeNoMpu(next),
                                 });
                             } else {
                                 self.writer_state.replace(WriterState::Empty);
@@ -649,8 +649,9 @@ impl<'a, C: ProcessManagementCapability> ProcessConsole<'a, C> {
                                         let proc_name = proc.get_process_name();
                                         if proc_name == name {
                                             let mut console_writer = ConsoleWriter::new();
-                                            let mut context: Option<ProcessPrinterContext> = None;
-                                            context = self.process_printer.print(
+                                            let mut context: ProcessPrinterContext =
+                                                ProcessPrinterContext::PrintSomeNoMpu(Iteration(0));
+                                            let next_iteration = self.process_printer.print(
                                                 proc,
                                                 &mut console_writer,
                                                 context,
@@ -660,11 +661,14 @@ impl<'a, C: ProcessManagementCapability> ProcessConsole<'a, C> {
                                                 &(console_writer.buf)[..console_writer.size],
                                             );
 
-                                            if context.is_some() {
+                                            if let Some(next) = next_iteration {
                                                 self.writer_state.replace(
                                                     WriterState::ProcessPrint {
                                                         process_id: proc.processid(),
-                                                        context: context,
+                                                        context:
+                                                            ProcessPrinterContext::PrintSomeNoMpu(
+                                                                next,
+                                                            ),
                                                     },
                                                 );
                                             }

@@ -8,17 +8,21 @@ use cortexm4;
 use kernel::deferred_call;
 use kernel::platform::chip::{Chip, InterruptService};
 
-pub struct Sam4l<I: InterruptService<Task> + 'static> {
+pub struct Sam4l<I: InterruptService<Task> + 'static, MP: kernel::platform::mpu::MpuPrinter<Self::MPU::MpuConfig>> {
     mpu: cortexm4::mpu::MPU,
     userspace_kernel_boundary: cortexm4::syscall::SysCall,
     pub pm: &'static crate::pm::PowerManager,
     interrupt_service: &'static I,
 }
 
-impl<I: InterruptService<Task> + 'static> Sam4l<I> {
-    pub unsafe fn new(pm: &'static crate::pm::PowerManager, interrupt_service: &'static I) -> Self {
+impl<I: InterruptService<Task> + 'static. MP: kernel::platform::mpu::MpuPrinter<Self::MPU::MpuConfig>> Sam4l<I> {
+    pub unsafe fn new(
+        pm: &'static crate::pm::PowerManager,
+        interrupt_service: &'static I,
+        printer: MP,
+    ) -> Self {
         Self {
-            mpu: cortexm4::mpu::MPU::new(),
+            mpu: cortexm4::mpu::MPU::new(printer),
             userspace_kernel_boundary: cortexm4::syscall::SysCall::new(),
             pm,
             interrupt_service,
@@ -234,7 +238,7 @@ impl InterruptService<Task> for Sam4lDefaultPeripherals {
     }
 }
 
-impl<I: InterruptService<Task> + 'static> Chip for Sam4l<I> {
+impl<I: InterruptService<Task> + 'static, MP: kernel::platform::mpu::MpuPrinter<Self::MPU::MpuConfig>> Chip for Sam4l<I> {
     type MPU = cortexm4::mpu::MPU;
     type UserspaceKernelBoundary = cortexm4::syscall::SysCall;
 

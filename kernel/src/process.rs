@@ -20,7 +20,9 @@ pub use crate::process_policies::{
     PanicFaultPolicy, ProcessFaultPolicy, RestartFaultPolicy, StopFaultPolicy,
     StopWithDebugFaultPolicy, ThresholdRestartFaultPolicy, ThresholdRestartThenPanicFaultPolicy,
 };
-pub use crate::process_printer::{ProcessPrinter, ProcessPrinterContext, ProcessPrinterText};
+pub use crate::process_printer::{
+    Iteration, ProcessPrinter, ProcessPrinterContext, ProcessPrinterText,
+};
 pub use crate::process_standard::ProcessStandard;
 pub use crate::process_utilities::{load_processes, load_processes_advanced, ProcessLoadError};
 
@@ -548,6 +550,8 @@ pub trait Process {
     /// Print out the full state of the process: its memory map, its
     /// context, and the state of the memory protection unit (MPU).
     fn print_full_process(&self, writer: &mut dyn Write);
+
+    fn print_mpu_config(&self, writer: &mut dyn Write);
 
     // debug
 

@@ -1100,6 +1100,12 @@ impl<C: Chip> Process for ProcessStandard<'_, C> {
         }
     }
 
+    fn print_mpu_config(&self, writer: &mut dyn Write) {
+        self.mpu_config.map(|cfg| {
+            self.chip.mpu().print_mpu_config(cfg, writer);
+        });
+    }
+
     fn print_full_process(&self, writer: &mut dyn Write) {
         self.stored_state.map(|stored_state| {
             // We guarantee the memory bounds pointers provided to the UKB are
