@@ -240,8 +240,8 @@ struct GrantDataSize(usize);
 struct GrantDataAlign(usize);
 
 impl KernelManagedLayout {
-    /// Reads the specified pointer as the base of the kernel owned grant
-    /// region that has previously been initialized.
+    /// Reads the specified pointer as the base of the kernel owned grant region
+    /// that has previously been initialized.
     ///
     /// # Safety
     ///
@@ -328,7 +328,7 @@ impl KernelManagedLayout {
         // We know that grant_t_align is a power of 2, so we can make a mask
         // that will save only the remainder bits.
         let grant_t_align_mask = grant_t_align.0 - 1;
-        // Determine padding to get to the next multipe of grant_t_align by
+        // Determine padding to get to the next multiple of grant_t_align by
         // taking the remainder and subtracting that from the alignment, then
         // ensuring a full alignment value maps to 0.
         let padding =
@@ -365,13 +365,13 @@ impl KernelManagedLayout {
 
     /// Read an 8 bit value from the counter field offset by the specified
     /// number of bits. This is a helper function for reading the counter field.
-    fn get_counter_offset(&self, offset: usize) -> usize {
+    fn get_counter_offset(&self, offset_bits: usize) -> usize {
         // # Safety
         //
         // Creating a `KernelManagedLayout` object requires that the pointers
         // are well aligned and point to valid memory.
         let counters_val = unsafe { self.counters_ptr.read() };
-        (counters_val >> offset) & 0xFF
+        (counters_val >> offset_bits) & 0xFF
     }
 
     /// Return the number of upcalls stored by the core kernel for this grant.
