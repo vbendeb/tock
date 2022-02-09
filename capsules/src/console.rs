@@ -52,14 +52,14 @@ pub const DRIVER_NUM: usize = driver::NUM::Console as usize;
 mod ro_allow {
     pub const WRITE: usize = 1;
     /// The number of allow buffers the kernel stores for this grant
-    pub const COUNT: usize = 2;
+    pub const COUNT: u8 = 2;
 }
 
 /// Ids for read-write allow buffers
 mod rw_allow {
     pub const READ: usize = 1;
     /// The number of allow buffers the kernel stores for this grant
-    pub const COUNT: usize = 2;
+    pub const COUNT: u8 = 2;
 }
 
 #[derive(Default)]
