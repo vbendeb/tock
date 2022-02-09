@@ -246,7 +246,10 @@ impl KernelManagedLayout {
     /// # Safety
     ///
     /// The incoming base pointer must be well aligned and already contain
-    /// initialized data in the expected form.
+    /// initialized data in the expected form. There must not be any other
+    /// `KernelManagedLayout` for the given `base_ptr` at the same time,
+    /// otherwise multiple mutable references to the same upcall/allow slices
+    /// could be created.
     unsafe fn read_from_base(base_ptr: *mut u8) -> Self {
         let counters_ptr = base_ptr as *mut usize;
         let counters_val = counters_ptr.read();
@@ -275,7 +278,9 @@ impl KernelManagedLayout {
     /// # Safety
     ///
     /// The incoming base pointer must be well aligned but cannot point to
-    /// initialized data.
+    /// initialized data. There must not be any other `KernelManagedLayout` for
+    /// the given `base_ptr` at the same time, otherwise multiple mutable
+    /// references to the same upcall/allow slices could be created.
     unsafe fn initialize_from_counts(
         base_ptr: *mut u8,
         upcalls_num_val: UpcallItems,
@@ -388,8 +393,9 @@ impl KernelManagedLayout {
         self.get_counter_offset(16)
     }
 
-    /// Return the slice of stored upcalls for this grant.
-    fn get_upcalls_slice(&self) -> &mut [SavedUpcall] {
+    /// Return mutable access to the slice of stored upcalls for this grant.
+    /// This is necessary for storing a new upcall.
+    fn get_upcalls_slice(&mut self) -> &mut [SavedUpcall] {
         // # Safety
         //
         // Creating a `KernelManagedLayout` object ensures that the pointer to
@@ -397,8 +403,9 @@ impl KernelManagedLayout {
         unsafe { slice::from_raw_parts_mut(self.upcalls_array, self.get_upcalls_number()) }
     }
 
-    /// Return the slice of stored read-only allow buffers for this grant.
-    fn get_allow_ro_slice(&self) -> &mut [SavedAllowRo] {
+    /// Return mutable access to the slice of stored read-only allow buffers for
+    /// this grant. This is necessary for storing a new read-only allow.
+    fn get_allow_ro_slice(&mut self) -> &mut [SavedAllowRo] {
         // # Safety
         //
         // Creating a `KernelManagedLayout` object ensures that the pointer to
@@ -406,13 +413,42 @@ impl KernelManagedLayout {
         unsafe { slice::from_raw_parts_mut(self.allow_ro_array, self.get_allow_ro_number()) }
     }
 
-    /// Return the slice of stored read-write allow buffers for this grant.
-    fn get_allow_rw_slice(&self) -> &mut [SavedAllowRw] {
+    /// Return mutable access to the slice of stored read-write allow buffers
+    /// for this grant. This is necessary for storing a new read-write allow.
+    fn get_allow_rw_slice(&mut self) -> &mut [SavedAllowRw] {
         // # Safety
         //
         // Creating a `KernelManagedLayout` object ensures that the pointer to
         // the RW allow array is valid.
         unsafe { slice::from_raw_parts_mut(self.allow_rw_array, self.get_allow_rw_number()) }
+    }
+
+    /// Return slices to the kernel managed upcalls and allow buffers. This
+    /// permits using upcalls and allow buffers when a capsule is accessing a
+    /// grant.
+    fn get_resource_slices(&self) -> (&[SavedUpcall], &[SavedAllowRo], &[SavedAllowRw]) {
+        // # Safety
+        //
+        // Creating a `KernelManagedLayout` object ensures that the pointer to
+        // the upcall array is valid.
+        let upcall_slice =
+            unsafe { slice::from_raw_parts(self.upcalls_array, self.get_upcalls_number()) };
+
+        // # Safety
+        //
+        // Creating a `KernelManagedLayout` object ensures that the pointer to
+        // the RO allow array is valid.
+        let allow_ro_slice =
+            unsafe { slice::from_raw_parts(self.allow_ro_array, self.get_allow_ro_number()) };
+
+        // # Safety
+        //
+        // Creating a `KernelManagedLayout` object ensures that the pointer to
+        // the RW allow array is valid.
+        let allow_rw_slice =
+            unsafe { slice::from_raw_parts(self.allow_rw_array, self.get_allow_rw_number()) };
+
+        (upcall_slice, allow_ro_slice, allow_rw_slice)
     }
 }
 
@@ -723,7 +759,7 @@ pub(crate) fn subscribe(
     upcall: Upcall,
 ) -> Result<Upcall, (Upcall, ErrorCode)> {
     // Enter grant and keep it open until _grant_open goes out of scope.
-    let (_grant_open, layout) =
+    let (_grant_open, mut layout) =
         match enter_grant_kernel_managed(process, upcall.upcall_id.driver_num) {
             Ok(val) => val,
             Err(e) => return Err((upcall, e)),
@@ -772,7 +808,7 @@ pub(crate) fn allow_ro(
     buffer: ReadOnlyProcessBuffer,
 ) -> Result<ReadOnlyProcessBuffer, (ReadOnlyProcessBuffer, ErrorCode)> {
     // Enter grant and keep it open until `_grant_open` goes out of scope.
-    let (_grant_open, layout) = match enter_grant_kernel_managed(process, driver_num) {
+    let (_grant_open, mut layout) = match enter_grant_kernel_managed(process, driver_num) {
         Ok(val) => val,
         Err(e) => return Err((buffer, e)),
     };
@@ -820,7 +856,7 @@ pub(crate) fn allow_rw(
     buffer: ReadWriteProcessBuffer,
 ) -> Result<ReadWriteProcessBuffer, (ReadWriteProcessBuffer, ErrorCode)> {
     // Enter grant and keep it open until `_grant_open` goes out of scope.
-    let (_grant_open, layout) = match enter_grant_kernel_managed(process, driver_num) {
+    let (_grant_open, mut layout) = match enter_grant_kernel_managed(process, driver_num) {
         Ok(val) => val,
         Err(e) => return Err((buffer, e)),
     };
@@ -1339,17 +1375,16 @@ impl<'a, T: Default, Upcalls: UpcallSize, AllowROs: AllowRoSize, AllowRWs: Allow
         //
         // - Pointer is well aligned and initialized with data from Self::new()
         //   call.
-        // - Data will not be modify external while this immutable reference is
-        //   alive.
+        // - Data will not be modified externally while this immutable reference
+        //   is alive.
         // - Data is accessible for the entire duration of this immutable
         //   reference.
         // - No other mutable reference to this memory exists concurrently.
         //   Mutable reference to this memory are only created through the
         //   kernel in the syscall interface which is serialized in time with
         //   this call.
-        let saved_upcalls_slice = layout.get_upcalls_slice();
-        let saved_allow_ro_slice = layout.get_allow_ro_slice();
-        let saved_allow_rw_slice = layout.get_allow_rw_slice();
+        let (saved_upcalls_slice, saved_allow_ro_slice, saved_allow_rw_slice) =
+            layout.get_resource_slices();
         let grant_data = unsafe {
             KernelManagedLayout::offset_of_grant_data_t(grant_ptr, alloc_size, grant_t_size)
                 .cast()
