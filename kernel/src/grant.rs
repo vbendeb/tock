@@ -248,22 +248,18 @@ impl KernelManagedLayout {
     /// The incoming base pointer must be well aligned and already contain
     /// initialized data in the expected form.
     unsafe fn read_from_base(base_ptr: *mut u8) -> Self {
-        let mut offset = 0;
         let counters_ptr = base_ptr as *mut usize;
         let counters_val = counters_ptr.read();
-        offset += 1;
 
         // Parse the counters field for each of the fields
         let upcalls_num = (counters_val & 0xFF) as u8;
         let allow_ro_num = ((counters_val >> 8) & 0xFF) as u8;
 
-        let upcalls_array = counters_ptr.add(offset) as *mut SavedUpcall;
-        offset += upcalls_num as usize;
-
-        let allow_ro_array = counters_ptr.add(offset) as *mut SavedAllowRo;
-        offset += allow_ro_num as usize;
-
-        let allow_rw_array = counters_ptr.add(offset) as *mut SavedAllowRw;
+        // Skip over the counter usize, then the stored array of `SavedAllowRo`
+        // items and `SavedAllowRw` items.
+        let upcalls_array = counters_ptr.add(1) as *mut SavedUpcall;
+        let allow_ro_array = upcalls_array.add(upcalls_num as usize) as *mut SavedAllowRo;
+        let allow_rw_array = allow_ro_array.add(allow_ro_num as usize) as *mut SavedAllowRw;
 
         Self {
             counters_ptr,
