@@ -78,6 +78,7 @@ impl InterruptService<()> for LiteXSimInterruptablePeripherals {
 }
 
 const NUM_PROCS: usize = 4;
+const NUM_PROCS_U8: u8 = 4;
 
 // Actual memory for holding the active process structures. Need an
 // empty list at least.
@@ -140,7 +141,7 @@ struct LiteXSim {
             >,
         >,
     >,
-    ipc: kernel::ipc::IPC<NUM_PROCS>,
+    ipc: kernel::ipc::IPC<NUM_PROCS_U8>,
     scheduler: &'static CooperativeSched<'static>,
     scheduler_timer: &'static VirtualSchedulerTimer<
         VirtualMuxAlarm<

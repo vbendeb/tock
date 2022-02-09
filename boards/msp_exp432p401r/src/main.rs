@@ -23,6 +23,7 @@ pub mod io;
 
 /// Number of concurrent processes this platform supports.
 const NUM_PROCS: usize = 4;
+const NUM_PROCS_U8: u8 = 4;
 
 /// Actual memory for holding the active process structures.
 static mut PROCESSES: [Option<&'static dyn kernel::process::Process>; NUM_PROCS] =
@@ -57,7 +58,7 @@ struct MspExp432P401R {
         'static,
         capsules::virtual_alarm::VirtualMuxAlarm<'static, msp432::timer::TimerA<'static>>,
     >,
-    ipc: kernel::ipc::IPC<NUM_PROCS>,
+    ipc: kernel::ipc::IPC<NUM_PROCS_U8>,
     adc: &'static capsules::adc::AdcDedicated<'static, msp432::adc::Adc<'static>>,
     wdt: &'static msp432::wdt::Wdt,
     scheduler: &'static RoundRobinSched<'static>,
