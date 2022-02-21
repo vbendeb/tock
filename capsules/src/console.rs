@@ -39,7 +39,7 @@
 
 use kernel::grant::{AllowRoCount, AllowRwCount, Grant, GrantKernelData, UpcallCount};
 use kernel::hil::uart;
-use kernel::processbuffer::{ReadableProcessBuffer, WriteableProcessBuffer};
+use kernel::processbuffer::{ProcessSliceIndex, ReadableProcessBuffer, WriteableProcessBuffer};
 use kernel::syscall::{CommandReturn, SyscallDriver};
 use kernel::utilities::cells::{OptionalCell, TakeCell};
 use kernel::{ErrorCode, ProcessId};
@@ -161,7 +161,9 @@ impl<'a> Console<'a> {
                     .get_readonly_processbuffer(ro_allow::WRITE)
                     .and_then(|write| {
                         write.enter(|data| {
-                            for (i, c) in data[data.len() - app.write_remaining..data.len()]
+                            for (i, c) in data
+                                .get(data.len() - app.write_remaining..data.len())
+                                .unwrap()
                                 .iter()
                                 .enumerate()
                             {

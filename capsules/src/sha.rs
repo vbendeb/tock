@@ -47,7 +47,7 @@ use core::cell::Cell;
 
 use kernel::grant::{AllowRoCount, AllowRwCount, Grant, UpcallCount};
 use kernel::hil::digest;
-use kernel::processbuffer::{ReadableProcessBuffer, WriteableProcessBuffer};
+use kernel::processbuffer::{ProcessSliceIndex, ReadableProcessBuffer, WriteableProcessBuffer};
 use kernel::syscall::{CommandReturn, SyscallDriver};
 use kernel::utilities::cells::{OptionalCell, TakeCell};
 use kernel::utilities::leasable_buffer::LeasableBuffer;
@@ -138,8 +138,10 @@ impl<
                                     self.data_copied.set(static_buffer_len);
 
                                     // Copy the data into the static buffer
-                                    data[..static_buffer_len]
-                                        .copy_to_slice(&mut buf[..static_buffer_len]);
+                                    data.get(..static_buffer_len)
+                                        .unwrap()
+                                        .copy_to_slice(&mut buf[..static_buffer_len])
+                                        .unwrap();
                                 });
 
                                 // Add the data from the static buffer to the HMAC
@@ -249,13 +251,19 @@ impl<
                                     data_len = data.len();
 
                                     if data_len > copied_data {
-                                        let remaining_data = &data[copied_data..];
+                                        let remaining_data = &data.get(copied_data..).unwrap();
                                         let remaining_len = data_len - copied_data;
 
                                         if remaining_len < static_buffer_len {
-                                            remaining_data.copy_to_slice(&mut buf[..remaining_len]);
+                                            remaining_data
+                                                .copy_to_slice(&mut buf[..remaining_len])
+                                                .unwrap();
                                         } else {
-                                            remaining_data[..static_buffer_len].copy_to_slice(buf);
+                                            remaining_data
+                                                .get(..static_buffer_len)
+                                                .unwrap()
+                                                .copy_to_slice(buf)
+                                                .unwrap();
                                         }
                                     }
                                     Ok(())
@@ -326,8 +334,11 @@ impl<
                                         self.data_copied.set(static_buffer_len);
 
                                         // Copy the data into the static buffer
-                                        compare[..static_buffer_len]
-                                            .copy_to_slice(&mut buf[..static_buffer_len]);
+                                        compare
+                                            .get(..static_buffer_len)
+                                            .unwrap()
+                                            .copy_to_slice(&mut buf[..static_buffer_len])
+                                            .unwrap();
                                     });
                                 })
                             });
@@ -375,9 +386,9 @@ impl<
                                 let len = dest.len();
 
                                 if len < L {
-                                    dest.copy_from_slice(&digest[0..len]);
+                                    dest.copy_from_slice(&digest[0..len]).unwrap();
                                 } else {
-                                    dest[0..L].copy_from_slice(digest);
+                                    dest.get(0..L).unwrap().copy_from_slice(digest).unwrap();
                                 }
                             })
                         });
@@ -669,8 +680,11 @@ impl<
                                             self.data_copied.set(static_buffer_len);
 
                                             // Copy the data into the static buffer
-                                            compare[..static_buffer_len]
-                                                .copy_to_slice(&mut buf[..static_buffer_len]);
+                                            compare
+                                                .get(..static_buffer_len)
+                                                .unwrap()
+                                                .copy_to_slice(&mut buf[..static_buffer_len])
+                                                .unwrap();
                                         });
                                     })
                                 });
