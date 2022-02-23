@@ -161,18 +161,17 @@ impl<'a> Console<'a> {
                     .get_readonly_processbuffer(ro_allow::WRITE)
                     .and_then(|write| {
                         write.enter(|data| {
-                            for (i, c) in data
-                                .get(data.len() - app.write_remaining..data.len())
-                                .unwrap()
-                                .iter()
-                                .enumerate()
-                            {
-                                if buffer.len() <= i {
-                                    return i; // Short circuit on partial send
+                            let ro_pb_slice_opt =
+                                data.get(data.len() - app.write_remaining..data.len());
+                            ro_pb_slice_opt.map_or(0, |ro_pb_slice| {
+                                for (i, c) in ro_pb_slice.iter().enumerate() {
+                                    if buffer.len() <= i {
+                                        return i; // Short circuit on partial send
+                                    }
+                                    buffer[i] = c.get();
                                 }
-                                buffer[i] = c.get();
-                            }
-                            app.write_remaining
+                                app.write_remaining
+                            })
                         })
                     })
                     .unwrap_or(0);
