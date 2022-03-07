@@ -98,13 +98,14 @@ impl<'a> AppFlash<'a> {
                                 self.buffer
                                     .take()
                                     .map_or(Err(ErrorCode::RESERVE), |buffer| {
+                                        let _ = app_buffer.copy_to_slice(buffer);
                                         let length = cmp::min(buffer.len(), app_buffer.len());
-                                        let d = &app_buffer.get(0..length).unwrap();
-                                        for (i, c) in
-                                            buffer.as_mut()[0..length].iter_mut().enumerate()
-                                        {
-                                            *c = d.get(i).unwrap().get();
-                                        }
+                                        // let d = &app_buffer.get(0..length).unwrap();
+                                        // for (i, c) in
+                                        //     buffer.as_mut()[0..length].iter_mut().enumerate()
+                                        // {
+                                        //     *c = d.get(i).unwrap().get();
+                                        // }
 
                                         self.driver.write(buffer, flash_address, length)
                                     })

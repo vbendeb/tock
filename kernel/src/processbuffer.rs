@@ -820,9 +820,44 @@ impl<'a> ReadableProcessSlice<'a> {
     /// `ErrorCode::SIZE` is returned. Subslicing can be used to obtain a slice
     /// of matching length.
     pub fn copy_to_slice(&self, dest: &mut [u8]) -> Result<(), ErrorCode> {
+        // Method implementation adopted from the
+        // core::slice::copy_from_slice method implementation:
+        // https://doc.rust-lang.org/src/core/slice/mod.rs.html#3034-3036
+
+        if self.len() != dest.len() {
+            Err(ErrorCode::SIZE)
+        } else {
+            // _If_ this turns out to not be efficiently optimized, it
+            // should be possible to use a ptr::copy_nonoverlapping here
+            // given we have exclusive mutable access to the destination
+            // slice which will never be in process memory, and the layout
+            // of &[ReadableProcessByte] is guaranteed to be compatible to
+            // &[u8].
+            for (i, b) in self.iter().enumerate() {
+                dest[i] = b.get();
+            }
+            Ok(())
+        }
+    }
+
+    /// Copy as much of the contents of a [`ReadableProcessSlice`] into a
+    /// mutable slice reference as possible.
+    ///
+    /// This will copy up to `self.len()` or `dest.len()` bytes, whichever is
+    /// smaller.
+    ///
+    /// This returns the number of bytes copied.
+    pub fn copy_to_slice_minimum(&self, dest: &mut [u8]) -> usize {
         // Method implemetation adopted from the
         // core::slice::copy_from_slice method implementation:
         // https://doc.rust-lang.org/src/core/slice/mod.rs.html#3034-3036
+
+        let copy_length = cmp::min(self.len(), dest.len());
+
+
+        let dest_short =  self.get_unchecked_mut(0..copy_length);
+
+        let _ = self.copy_to_slice(dest_short)
 
         if self.len() != dest.len() {
             Err(ErrorCode::SIZE)
